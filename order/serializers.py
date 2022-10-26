@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Order, OrderItem
+from product.models import Product
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -28,7 +29,15 @@ class OrderSerializer(serializers.ModelSerializer):
         products = validated_data.pop('products')
         request = self.context['request']
         user = request.user
-        order = Order.objects.create(user=user, status='open')
+        total_sum = 0
+        for product in products:
+            price = Product.objects.get(id=product['product']).price
+            try:
+                total_sum += product['quantity'] * price
+            except KeyError:
+                total_sum += price
+
+        order = Order.objects.create(user=user, total_sum=total_sum, status='open')
         for product in products:
             try:
                 OrderItem.objects.create(order=order,
@@ -44,8 +53,3 @@ class OrderSerializer(serializers.ModelSerializer):
         repr['products'] = OrderItemSerializer(instance.items.all(), many=True).data
         repr.pop('product')
         return repr
-
-
-
-
-

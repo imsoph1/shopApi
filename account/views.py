@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.generics import GenericAPIView
-from .send_email import send_confirmation_email
+from .send_email import send_confirmation_email, send_code_password_reset
 from . import serialzers
 from django.contrib.auth import get_user_model
 # Create your views here
@@ -52,10 +52,33 @@ class LogoutView(GenericAPIView):
         return Response('Successfully logged out!', status=204)
 
 
+class ForgotPasswordView(APIView):
+    permission_classes = (permissions.AllowAny,)
 
-# def send_mail(request):
-#     html = "<html><body>Hello check your gmail</body></html>"
-#     send_confirmation_email('sagynbekovasafiya33@gmail.com', '1234')
-#     return HttpResponse(html)
+    def post(self, request):
+       serializer = serialzers.ForgotPasswordSerializer(data=request.data)
+       serializer.is_valid(raise_exception=True)
+       try:
+           email = serializer.data.get('email')
+           user = User.objects.get(email=email)
+           user.create_activation_code()
+           user.save()
+           send_code_password_reset(user)
+           return Response('check ur email we sent u a code!')
+       except User.DoesNotExist:
+           return Response(
+               'User with this email does not exist!', status=400
+           )
+
+
+class RestorePasswordView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        serialzer = serialzers.RestorePasswordserializer(data=request.data)
+        serialzer.is_valid(raise_exception=True)
+        serialzer.save()
+        return Response('Password has changed successfully!!!')
+
 
 
