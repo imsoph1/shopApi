@@ -25,7 +25,7 @@ class RegistrationView(APIView):
 
 
 class ActivationView(APIView):
-    permission_class = (permissions.AllowAny,)
+    permission_classes = (permissions.AllowAny,)
 
     def get(self, request, activation_code):
         try:
@@ -43,7 +43,7 @@ class LoginView(TokenObtainPairView):
 
 
 class LogoutView(GenericAPIView):
-    serializer_class = serialzers.LogoutSerializer
+    serializer_classes = serialzers.LogoutSerializer
 
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
