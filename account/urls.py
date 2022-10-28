@@ -10,6 +10,7 @@ urlpatterns = [
     path('refresh/', TokenRefreshView.as_view()),
     path('forgot/', views.ForgotPasswordView.as_view()),
     path('restore/', views.RestorePasswordView.as_view()),
+    path('follow-spam/', views.FollowSpam.as_view()),
 
 
 ]

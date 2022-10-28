@@ -7,6 +7,7 @@ from .send_email import send_confirmation_email, send_code_password_reset
 from . import serialzers
 from django.contrib.auth import get_user_model
 # Create your views here
+from shopapi.tasks import send_email_task
 
 User = get_user_model()
 
@@ -19,7 +20,8 @@ class RegistrationView(APIView):
         if serializer.is_valid(raise_exception=True):
             user = serializer.save()
             if user:
-                send_confirmation_email(user.email, user.activation_code)
+                # send_confirmation_email(user.email, user.activation_code)
+                send_email_task.delay(user.email, user.activation_code)
             return Response(serializer.data, status=201)
         return Response('Bad request', status=400)
 
@@ -79,6 +81,18 @@ class RestorePasswordView(APIView):
         serialzer.is_valid(raise_exception=True)
         serialzer.save()
         return Response('Password has changed successfully!!!')
+
+
+class FollowSpam(APIView):
+    def post(self, request):
+        serializer = serialzers.SpamViewSerializer(
+            data=request.data, context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save(email=request.user.email)
+        return Response('Followed to spam!', 201)
+
+
 
 
 

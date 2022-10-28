@@ -60,3 +60,8 @@ class CustomUser(AbstractUser):
         self.activation_code = code
 
 
+class Spam_Contacts(models.Model):
+    email = models.EmailField('email address',
+                              unique=True)
+
+
